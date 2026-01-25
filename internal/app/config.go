@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/paincake00/todo-go/internal/utils/env"
 )
@@ -12,16 +13,22 @@ type Config struct {
 }
 
 type DBConfig struct {
-	address string
-	driver  string
+	address         string
+	driver          string
+	maxOpenConn     int
+	maxIdleConn     int
+	maxConnLifetime time.Duration
 }
 
 func LoadConfig() Config {
 	cfg := Config{
 		addr: env.GetString("APP_ADDR", ":8080"),
 		db: DBConfig{
-			address: getPostgresUri(),
-			driver:  env.GetString("DB_DRIVER", "postgres"),
+			address:         getPostgresUri(),
+			driver:          env.GetString("DB_DRIVER", "postgres"),
+			maxOpenConn:     env.GetInt("DB_MAX_OPEN_CONS", 30),
+			maxIdleConn:     env.GetInt("DB_MAX_IDLE_CONS", 30),
+			maxConnLifetime: env.GetDuration("DB_MAX_CONN_LIFETIME", 30*time.Minute),
 		},
 	}
 	return cfg
