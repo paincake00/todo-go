@@ -12,16 +12,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/paincake00/todo-go/internal/db/postgres"
 	httptodo "github.com/paincake00/todo-go/internal/delivery/http"
+	"github.com/paincake00/todo-go/internal/domain/service"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type App struct {
-	config      Config
-	logger      *zap.SugaredLogger
-	taskHandler *httptodo.TaskHandler
-	router      *gin.Engine
-	gormDB      *gorm.DB
+	config         Config
+	logger         *zap.SugaredLogger
+	taskHandler    *httptodo.TaskHandler
+	router         *gin.Engine
+	gormDB         *gorm.DB
+	taskRepository postgres.ITaskRepository
+	taskService    service.ITaskService
 }
 
 func NewApp(config Config, logger *zap.SugaredLogger) *App {
@@ -41,7 +44,11 @@ func NewApp(config Config, logger *zap.SugaredLogger) *App {
 	}
 	app.gormDB = gormDB
 
-	app.taskHandler = httptodo.NewTaskHandler(logger)
+	taskRepository := postgres.NewTaskRepository(gormDB)
+
+	taskService := service.NewTaskService(taskRepository)
+
+	app.taskHandler = httptodo.NewTaskHandler(logger, taskService)
 
 	app.router = app.InitRouter()
 
