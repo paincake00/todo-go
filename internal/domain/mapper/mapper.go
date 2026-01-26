@@ -14,3 +14,13 @@ func FromTaskDTOtoModel(taskDTO *dto.TaskDTO) *models.Task {
 		CreatedAt:   taskDTO.CreatedAt,
 	}
 }
+
+func FromTaskModelToDTO(task *models.Task) *dto.TaskDTO {
+	return &dto.TaskDTO{
+		Id:          task.Id,
+		Name:        task.Name,
+		Description: task.Description,
+		IsCompleted: task.IsCompleted,
+		CreatedAt:   task.CreatedAt,
+	}
+}

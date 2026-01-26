@@ -31,11 +31,13 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	if err := h.taskService.Create(ctx, mapper.FromTaskDTOtoModel(&task)); err != nil {
+	taskModel := mapper.FromTaskDTOtoModel(&task)
+
+	if err := h.taskService.Create(ctx, taskModel); err != nil {
 		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
-	c.JSON(httpgo.StatusOK, gin.H{"data": task})
+	c.JSON(httpgo.StatusOK, gin.H{"data": mapper.FromTaskModelToDTO(taskModel)})
 }
 
 func (h *TaskHandler) GetAllTasks(c *gin.Context) {
