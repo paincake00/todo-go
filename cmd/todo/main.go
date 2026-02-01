@@ -6,6 +6,13 @@ import (
 	"github.com/paincake00/todo-go/internal/utils/logs"
 )
 
+// @title           Swagger Todo API
+// @version         1.0
+// @description     Swagger for simple todo service
+// @termsOfService  http://swagger.io/terms/
+
+// @host      localhost:8080
+// @BasePath  /api/v1
 func main() {
 	logger := logs.NewLogger()
 	defer func() {
