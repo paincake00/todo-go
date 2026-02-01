@@ -38,13 +38,19 @@ func (repo *TaskRepository) GetAll(ctx context.Context, limit, offset int) ([]mo
 }
 
 func (repo *TaskRepository) GetById(ctx context.Context, id uint) (*models.Task, error) {
-	panic("implement me")
+	task, err := gorm.G[models.Task](repo.db).Where("id = ?", id).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
 }
 
 func (repo *TaskRepository) UpdateById(ctx context.Context, task *models.Task) error {
-	panic("implement me")
+	_, err := gorm.G[models.Task](repo.db).Where("id = ?", task.Id).Updates(ctx, *task)
+	return err
 }
 
 func (repo *TaskRepository) DeleteById(ctx context.Context, id uint) error {
-	panic("implement me")
+	_, err := gorm.G[models.Task](repo.db).Where("id = ?", id).Delete(ctx)
+	return err
 }

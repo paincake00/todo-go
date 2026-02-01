@@ -2,6 +2,7 @@ package http
 
 import (
 	httpgo "net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/paincake00/todo-go/internal/delivery/dto"
@@ -41,15 +42,58 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 }
 
 func (h *TaskHandler) GetAllTasks(c *gin.Context) {
-	tasks, err := h.taskService.GetAll(c.Request.Context(), 10, 0)
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+
+	tasks, err := h.taskService.GetAll(c.Request.Context(), limit, offset)
 	if err != nil {
 		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(httpgo.StatusOK, tasks)
 }
 
-func (h *TaskHandler) GetTaskById(c *gin.Context) {}
+func (h *TaskHandler) GetTaskById(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+	}
 
-func (h *TaskHandler) UpdateTaskById(c *gin.Context) {}
+	task, err := h.taskService.GetById(c.Request.Context(), uint(id))
+	if err != nil {
+		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(httpgo.StatusOK, task)
+}
 
-func (h *TaskHandler) DeleteTaskById(c *gin.Context) {}
+func (h *TaskHandler) UpdateTaskById(c *gin.Context) {
+	var task dto.TaskDTO
+
+	if err := c.ShouldBindJSON(&task); err != nil {
+		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	taskModel := mapper.FromTaskDTOtoModel(&task)
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	taskModel.Id = uint(id)
+
+	if err = h.taskService.UpdateById(c.Request.Context(), taskModel); err != nil {
+		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(httpgo.StatusOK, gin.H{"data": mapper.FromTaskModelToDTO(taskModel)})
+}
+
+func (h *TaskHandler) DeleteTaskById(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	if err = h.taskService.DeleteById(c.Request.Context(), uint(id)); err != nil {
+		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+}

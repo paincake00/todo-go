@@ -34,13 +34,13 @@ func (s *TaskService) GetAll(ctx context.Context, limit, offset int) ([]models.T
 }
 
 func (s *TaskService) GetById(ctx context.Context, id uint) (*models.Task, error) {
-	panic("implement me")
+	return s.taskRepository.GetById(ctx, id)
 }
 
 func (s *TaskService) UpdateById(ctx context.Context, task *models.Task) error {
-	panic("implement me")
+	return s.taskRepository.UpdateById(ctx, task)
 }
 
 func (s *TaskService) DeleteById(ctx context.Context, id uint) error {
-	panic("implement me")
+	return s.taskRepository.DeleteById(ctx, id)
 }
