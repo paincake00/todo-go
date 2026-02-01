@@ -11,6 +11,11 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	LIMIT  = 10
+	OFFSET = 0
+)
+
 type TaskHandler struct {
 	taskService service.ITaskService
 	logger      *zap.SugaredLogger
@@ -28,26 +33,28 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&task); err != nil {
 		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	ctx := c.Request.Context()
 
-	taskModel := mapper.FromTaskDTOtoModel(&task)
-
-	if err := h.taskService.Create(ctx, taskModel); err != nil {
+	taskModel, err := h.taskService.Create(ctx, mapper.FromTaskDTOtoModel(&task))
+	if err != nil {
 		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	c.JSON(httpgo.StatusOK, gin.H{"data": mapper.FromTaskModelToDTO(taskModel)})
+	c.JSON(httpgo.StatusOK, mapper.FromTaskModelToDTO(taskModel))
 }
 
 func (h *TaskHandler) GetAllTasks(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", strconv.Itoa(LIMIT)))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", strconv.Itoa(OFFSET)))
 
 	tasks, err := h.taskService.GetAll(c.Request.Context(), limit, offset)
 	if err != nil {
 		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(httpgo.StatusOK, tasks)
 }
@@ -56,11 +63,13 @@ func (h *TaskHandler) GetTaskById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	task, err := h.taskService.GetById(c.Request.Context(), uint(id))
 	if err != nil {
 		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(httpgo.StatusOK, task)
 }
@@ -70,27 +79,29 @@ func (h *TaskHandler) UpdateTaskById(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&task); err != nil {
 		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-
-	taskModel := mapper.FromTaskDTOtoModel(&task)
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-	taskModel.Id = uint(id)
+	task.Id = uint(id)
 
-	if err = h.taskService.UpdateById(c.Request.Context(), taskModel); err != nil {
+	taskModel, err := h.taskService.UpdateById(c.Request.Context(), mapper.FromTaskDTOtoModel(&task))
+	if err != nil {
 		c.JSON(httpgo.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	c.JSON(httpgo.StatusOK, gin.H{"data": mapper.FromTaskModelToDTO(taskModel)})
+	c.JSON(httpgo.StatusOK, mapper.FromTaskModelToDTO(taskModel))
 }
 
 func (h *TaskHandler) DeleteTaskById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(httpgo.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	if err = h.taskService.DeleteById(c.Request.Context(), uint(id)); err != nil {

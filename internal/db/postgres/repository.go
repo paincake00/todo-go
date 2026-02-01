@@ -2,16 +2,17 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/paincake00/todo-go/internal/db/models"
 	"gorm.io/gorm"
 )
 
 type ITaskRepository interface {
-	Create(ctx context.Context, task *models.Task) error
+	Create(ctx context.Context, task *models.Task) (*models.Task, error)
 	GetAll(ctx context.Context, limit, offset int) ([]models.Task, error)
 	GetById(ctx context.Context, id uint) (*models.Task, error)
-	UpdateById(ctx context.Context, task *models.Task) error
+	UpdateById(ctx context.Context, task *models.Task) (*models.Task, error)
 	DeleteById(ctx context.Context, id uint) error
 }
 
@@ -25,32 +26,37 @@ func NewTaskRepository(db *gorm.DB) ITaskRepository {
 	}
 }
 
-func (repo *TaskRepository) Create(ctx context.Context, task *models.Task) error {
-	return gorm.G[models.Task](repo.db).Create(ctx, task)
+func (t TaskRepository) Create(ctx context.Context, task *models.Task) (*models.Task, error) {
+	err := gorm.G[models.Task](t.db).Create(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	return t.GetById(ctx, task.Id)
 }
 
-func (repo *TaskRepository) GetAll(ctx context.Context, limit, offset int) ([]models.Task, error) {
-	tasks, err := gorm.G[models.Task](repo.db).Limit(limit).Offset(offset).Find(ctx)
+func (t TaskRepository) GetAll(ctx context.Context, limit, offset int) ([]models.Task, error) {
+	tasks, err := gorm.G[models.Task](t.db).Limit(limit).Offset(offset).Find(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return tasks, nil
 }
 
-func (repo *TaskRepository) GetById(ctx context.Context, id uint) (*models.Task, error) {
-	task, err := gorm.G[models.Task](repo.db).Where("id = ?", id).First(ctx)
+func (t TaskRepository) GetById(ctx context.Context, id uint) (*models.Task, error) {
+	task, err := gorm.G[models.Task](t.db).Where("id = ?", id).First(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return &task, nil
 }
 
-func (repo *TaskRepository) UpdateById(ctx context.Context, task *models.Task) error {
-	_, err := gorm.G[models.Task](repo.db).Where("id = ?", task.Id).Updates(ctx, *task)
-	return err
+func (t TaskRepository) UpdateById(ctx context.Context, task *models.Task) (*models.Task, error) {
+	task.UpdatedAt = time.Now()
+	t.db.Model(task).Updates(task.ToMap())
+	return t.GetById(ctx, task.Id)
 }
 
-func (repo *TaskRepository) DeleteById(ctx context.Context, id uint) error {
-	_, err := gorm.G[models.Task](repo.db).Where("id = ?", id).Delete(ctx)
+func (t TaskRepository) DeleteById(ctx context.Context, id uint) error {
+	_, err := gorm.G[models.Task](t.db).Where("id = ?", id).Delete(ctx)
 	return err
 }

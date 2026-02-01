@@ -12,6 +12,7 @@ func FromTaskDTOtoModel(taskDTO *dto.TaskDTO) *models.Task {
 		Description: taskDTO.Description,
 		IsCompleted: taskDTO.IsCompleted,
 		CreatedAt:   taskDTO.CreatedAt,
+		UpdatedAt:   taskDTO.UpdatedAt,
 	}
 }
 
@@ -22,5 +23,6 @@ func FromTaskModelToDTO(task *models.Task) *dto.TaskDTO {
 		Description: task.Description,
 		IsCompleted: task.IsCompleted,
 		CreatedAt:   task.CreatedAt,
+		UpdatedAt:   task.UpdatedAt,
 	}
 }

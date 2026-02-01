@@ -8,10 +8,10 @@ import (
 )
 
 type ITaskService interface {
-	Create(ctx context.Context, task *models.Task) error
+	Create(ctx context.Context, task *models.Task) (*models.Task, error)
 	GetAll(ctx context.Context, limit, offset int) ([]models.Task, error)
 	GetById(ctx context.Context, id uint) (*models.Task, error)
-	UpdateById(ctx context.Context, task *models.Task) error
+	UpdateById(ctx context.Context, task *models.Task) (*models.Task, error)
 	DeleteById(ctx context.Context, id uint) error
 }
 
@@ -25,7 +25,7 @@ func NewTaskService(taskRepository postgres.ITaskRepository) ITaskService {
 	}
 }
 
-func (s *TaskService) Create(ctx context.Context, data *models.Task) error {
+func (s *TaskService) Create(ctx context.Context, data *models.Task) (*models.Task, error) {
 	return s.taskRepository.Create(ctx, data)
 }
 
@@ -37,7 +37,7 @@ func (s *TaskService) GetById(ctx context.Context, id uint) (*models.Task, error
 	return s.taskRepository.GetById(ctx, id)
 }
 
-func (s *TaskService) UpdateById(ctx context.Context, task *models.Task) error {
+func (s *TaskService) UpdateById(ctx context.Context, task *models.Task) (*models.Task, error) {
 	return s.taskRepository.UpdateById(ctx, task)
 }
 
