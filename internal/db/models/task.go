@@ -7,8 +7,8 @@ type Task struct {
 	Name        string
 	Description string
 	IsCompleted bool
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	CreatedAt   time.Time `gorm:"autoCreateTime"`
+	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
 }
 
 func (t *Task) ToMap() map[string]interface{} {

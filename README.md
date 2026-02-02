@@ -1,3 +1,19 @@
+### stack
+
+- [gin](https://github.com/gin-gonic/gin)
+- [GORM](https://gorm.io/)
+- [swag](https://github.com/swaggo/swag), [gin-swagger](https://github.com/swaggo/gin-swagger)
+- [godotenv](https://github.com/joho/godotenv)
+- [zap](https://go.uber.org/zap)
+- [testcontainers](https://golang.testcontainers.org)
+
+
+swagger:
+```
+http://localhost:8080/swagger/index.html
+```
+
+
 GET tasks
 ```sh
  curl  "http://localhost:8080/api/v1/tasks?limit=10&offset=0"

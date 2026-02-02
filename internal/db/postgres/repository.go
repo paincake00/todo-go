@@ -2,11 +2,14 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/paincake00/todo-go/internal/db/models"
 	"gorm.io/gorm"
 )
+
+var ErrorNotFound = errors.New("not found")
 
 type ITaskRepository interface {
 	Create(ctx context.Context, task *models.Task) (*models.Task, error)
@@ -45,7 +48,7 @@ func (t TaskRepository) GetAll(ctx context.Context, limit, offset int) ([]models
 func (t TaskRepository) GetById(ctx context.Context, id uint) (*models.Task, error) {
 	task, err := gorm.G[models.Task](t.db).Where("id = ?", id).First(ctx)
 	if err != nil {
-		return nil, err
+		return nil, ErrorNotFound
 	}
 	return &task, nil
 }
@@ -57,6 +60,12 @@ func (t TaskRepository) UpdateById(ctx context.Context, task *models.Task) (*mod
 }
 
 func (t TaskRepository) DeleteById(ctx context.Context, id uint) error {
-	_, err := gorm.G[models.Task](t.db).Where("id = ?", id).Delete(ctx)
-	return err
+	rowsAffected, err := gorm.G[models.Task](t.db).Where("id = ?", id).Delete(ctx)
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrorNotFound
+	}
+	return nil
 }

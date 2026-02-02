@@ -1,10 +1,12 @@
 package http
 
 import (
+	"errors"
 	httpgo "net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/paincake00/todo-go/internal/db/postgres"
 	"github.com/paincake00/todo-go/internal/delivery/dto"
 	"github.com/paincake00/todo-go/internal/domain/mapper"
 	"github.com/paincake00/todo-go/internal/domain/service"
@@ -51,7 +53,10 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 	taskModel, err := h.taskService.Create(ctx, mapper.FromTaskDTOtoModel(&task))
 	if err != nil {
-		c.JSON(httpgo.StatusInternalServerError, dto.InternalErrorResponse{Code: httpgo.StatusInternalServerError, Error: err.Error()})
+		c.JSON(
+			httpgo.StatusInternalServerError,
+			dto.InternalErrorResponse{Code: httpgo.StatusInternalServerError, Error: err.Error()},
+		)
 		return
 	}
 
@@ -74,7 +79,10 @@ func (h *TaskHandler) GetAllTasks(c *gin.Context) {
 
 	tasks, err := h.taskService.GetAll(c.Request.Context(), limit, offset)
 	if err != nil {
-		c.JSON(httpgo.StatusInternalServerError, dto.InternalErrorResponse{Code: httpgo.StatusInternalServerError, Error: err.Error()})
+		c.JSON(
+			httpgo.StatusInternalServerError,
+			dto.InternalErrorResponse{Code: httpgo.StatusInternalServerError, Error: err.Error()},
+		)
 		return
 	}
 	c.JSON(httpgo.StatusOK, tasks)
@@ -100,10 +108,18 @@ func (h *TaskHandler) GetTaskById(c *gin.Context) {
 
 	task, err := h.taskService.GetById(c.Request.Context(), uint(id))
 	if err != nil {
-		c.JSON(httpgo.StatusInternalServerError, dto.InternalErrorResponse{
-			Code:  httpgo.StatusInternalServerError,
-			Error: err.Error(),
-		})
+		switch {
+		case errors.Is(err, postgres.ErrorNotFound):
+			c.JSON(httpgo.StatusNotFound, dto.NotFoundErrorResponse{
+				Code:  httpgo.StatusNotFound,
+				Error: err.Error(),
+			})
+		default:
+			c.JSON(httpgo.StatusInternalServerError, dto.InternalErrorResponse{
+				Code:  httpgo.StatusInternalServerError,
+				Error: err.Error(),
+			})
+		}
 		return
 	}
 	c.JSON(httpgo.StatusOK, task)
@@ -138,7 +154,18 @@ func (h *TaskHandler) UpdateTaskById(c *gin.Context) {
 
 	taskModel, err := h.taskService.UpdateById(c.Request.Context(), mapper.FromTaskDTOtoModel(&task))
 	if err != nil {
-		c.JSON(httpgo.StatusInternalServerError, dto.InternalErrorResponse{Code: httpgo.StatusInternalServerError, Error: err.Error()})
+		switch {
+		case errors.Is(err, postgres.ErrorNotFound):
+			c.JSON(httpgo.StatusNotFound, dto.NotFoundErrorResponse{
+				Code:  httpgo.StatusNotFound,
+				Error: err.Error(),
+			})
+		default:
+			c.JSON(httpgo.StatusInternalServerError, dto.InternalErrorResponse{
+				Code:  httpgo.StatusInternalServerError,
+				Error: err.Error(),
+			})
+		}
 		return
 	}
 
@@ -163,11 +190,21 @@ func (h *TaskHandler) DeleteTaskById(c *gin.Context) {
 		return
 	}
 
-	if err = h.taskService.DeleteById(c.Request.Context(), uint(id)); err != nil {
-		c.JSON(
-			httpgo.StatusInternalServerError,
-			dto.InternalErrorResponse{Code: httpgo.StatusInternalServerError, Error: err.Error()},
-		)
+	err = h.taskService.DeleteById(c.Request.Context(), uint(id))
+	if err != nil {
+		switch {
+		case errors.Is(err, postgres.ErrorNotFound):
+			c.JSON(httpgo.StatusNotFound, dto.NotFoundErrorResponse{
+				Code:  httpgo.StatusNotFound,
+				Error: err.Error(),
+			})
+		default:
+			c.JSON(httpgo.StatusInternalServerError, dto.InternalErrorResponse{
+				Code:  httpgo.StatusInternalServerError,
+				Error: err.Error(),
+			})
+		}
+		return
 	}
 
 	c.JSON(httpgo.StatusNoContent, nil)

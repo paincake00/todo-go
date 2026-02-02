@@ -1,9 +1,30 @@
 basePath: /api/v1
 definitions:
-  dto.ErrorResponse:
+  dto.BadReqErrorResponse:
     properties:
+      code:
+        example: 400
+        type: integer
       error:
-        example: something went wrong
+        example: bad request from client
+        type: string
+    type: object
+  dto.InternalErrorResponse:
+    properties:
+      code:
+        example: 500
+        type: integer
+      error:
+        example: internal server error
+        type: string
+    type: object
+  dto.NotFoundErrorResponse:
+    properties:
+      code:
+        example: 404
+        type: integer
+      error:
+        example: task not found
         type: string
     type: object
   dto.TaskDTO:
@@ -55,7 +76,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.InternalErrorResponse'
       summary: Получить список задач
       tags:
       - tasks
@@ -80,12 +101,12 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.BadReqErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-      summary: Новая задача
+            $ref: '#/definitions/dto.InternalErrorResponse'
+      summary: Создать задачу
       tags:
       - tasks
   /tasks/{id}:
@@ -105,11 +126,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.BadReqErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.NotFoundErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.InternalErrorResponse'
       summary: Удалить задачу
       tags:
       - tasks
@@ -131,11 +156,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.BadReqErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.NotFoundErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.InternalErrorResponse'
       summary: Получить задачу по ID
       tags:
       - tasks
@@ -165,15 +194,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.BadReqErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.NotFoundErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.ErrorResponse'
+            $ref: '#/definitions/dto.InternalErrorResponse'
       summary: Обновить задачу
       tags:
       - tasks
