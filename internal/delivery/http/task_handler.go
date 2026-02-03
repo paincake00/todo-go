@@ -36,13 +36,13 @@ func NewTaskHandler(logger *zap.SugaredLogger, taskService service.ITaskService)
 // @Tags         tasks
 // @Accept       json
 // @Produce      json
-// @Param        task body dto.TaskDTO true "Тело новой задачи"
-// @Success      200  {object}  dto.TaskDTO
+// @Param        task body dto.TaskCreateDTO true "Тело новой задачи"
+// @Success      200  {object}  dto.TaskResponseDTO
 // @Failure      400  {object}  dto.BadReqErrorResponse
 // @Failure      500  {object}  dto.InternalErrorResponse
 // @Router       /tasks [post]
 func (h *TaskHandler) CreateTask(c *gin.Context) {
-	var task dto.TaskDTO
+	var task dto.TaskCreateDTO
 
 	if err := c.ShouldBindJSON(&task); err != nil {
 		c.JSON(httpgo.StatusBadRequest, dto.BadReqErrorResponse{Code: httpgo.StatusBadRequest, Error: err.Error()})
@@ -51,7 +51,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	taskModel, err := h.taskService.Create(ctx, mapper.FromTaskDTOtoModel(&task))
+	taskModel, err := h.taskService.Create(ctx, mapper.FromTaskCreateDTOtoModel(&task))
 	if err != nil {
 		c.JSON(
 			httpgo.StatusInternalServerError,
@@ -70,7 +70,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 // @Produce json
 // @Param limit query int false "Limit (pagination)" default(20)
 // @Param offset query int false "Offset (pagination)" default(0)
-// @Success 200 {array} dto.TaskDTO
+// @Success 200 {array} dto.TaskResponseDTO
 // @Failure      500  {object}  dto.InternalErrorResponse
 // @Router /tasks [get]
 func (h *TaskHandler) GetAllTasks(c *gin.Context) {
@@ -85,7 +85,7 @@ func (h *TaskHandler) GetAllTasks(c *gin.Context) {
 		)
 		return
 	}
-	c.JSON(httpgo.StatusOK, tasks)
+	c.JSON(httpgo.StatusOK, mapper.FromTaskModelListToDTO(tasks))
 }
 
 // GetTaskById godoc
@@ -94,7 +94,7 @@ func (h *TaskHandler) GetAllTasks(c *gin.Context) {
 // @Tags tasks
 // @Produce json
 // @Param id path int true "ID задачи"
-// @Success 200 {object} dto.TaskDTO
+// @Success 200 {object} dto.TaskResponseDTO
 // @Failure      400  {object}  dto.BadReqErrorResponse
 // @Failure      404  {object}  dto.NotFoundErrorResponse
 // @Failure      500  {object}  dto.InternalErrorResponse
@@ -122,7 +122,7 @@ func (h *TaskHandler) GetTaskById(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(httpgo.StatusOK, task)
+	c.JSON(httpgo.StatusOK, mapper.FromTaskModelToDTO(task))
 }
 
 // UpdateTaskById godoc
@@ -132,14 +132,14 @@ func (h *TaskHandler) GetTaskById(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "ID задачи"
-// @Param task body dto.TaskDTO true "Обновляемые поля"
-// @Success 200 {object} dto.TaskDTO
+// @Param task body dto.TaskResponseDTO true "Обновляемые поля"
+// @Success 200 {object} dto.TaskResponseDTO
 // @Failure      400  {object}  dto.BadReqErrorResponse
 // @Failure      404  {object}  dto.NotFoundErrorResponse
 // @Failure      500  {object}  dto.InternalErrorResponse
 // @Router /tasks/{id} [put]
 func (h *TaskHandler) UpdateTaskById(c *gin.Context) {
-	var task dto.TaskDTO
+	var task dto.TaskUpdateDTO // использовать map TODO
 
 	if err := c.ShouldBindJSON(&task); err != nil {
 		c.JSON(httpgo.StatusBadRequest, dto.BadReqErrorResponse{Code: httpgo.StatusBadRequest, Error: err.Error()})
@@ -149,10 +149,16 @@ func (h *TaskHandler) UpdateTaskById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(httpgo.StatusBadRequest, dto.BadReqErrorResponse{Code: httpgo.StatusBadRequest, Error: err.Error()})
+		return
 	}
 	task.Id = uint(id)
 
-	taskModel, err := h.taskService.UpdateById(c.Request.Context(), mapper.FromTaskDTOtoModel(&task))
+	if task.Name == nil && task.Description == nil && task.IsCompleted == nil {
+		c.JSON(httpgo.StatusBadRequest, dto.BadReqErrorResponse{Code: httpgo.StatusBadRequest, Error: "at least one field must be provided"})
+		return
+	}
+
+	taskModel, err := h.taskService.UpdateById(c.Request.Context(), mapper.FromTaskUpdateDTOtoMap(&task))
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.ErrorNotFound):

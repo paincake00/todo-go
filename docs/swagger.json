@@ -42,7 +42,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.TaskDTO"
+                                "$ref": "#/definitions/dto.TaskResponseDTO"
                             }
                         }
                     },
@@ -73,7 +73,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskCreateDTO"
                         }
                     }
                 ],
@@ -81,7 +81,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     },
                     "400": {
@@ -122,7 +122,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     },
                     "400": {
@@ -171,7 +171,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     }
                 ],
@@ -179,7 +179,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     },
                     "400": {
@@ -286,7 +286,21 @@
                 }
             }
         },
-        "dto.TaskDTO": {
+        "dto.TaskCreateDTO": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TaskResponseDTO": {
             "type": "object",
             "properties": {
                 "created_at": {

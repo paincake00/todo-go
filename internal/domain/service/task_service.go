@@ -11,7 +11,7 @@ type ITaskService interface {
 	Create(ctx context.Context, task *models.Task) (*models.Task, error)
 	GetAll(ctx context.Context, limit, offset int) ([]models.Task, error)
 	GetById(ctx context.Context, id uint) (*models.Task, error)
-	UpdateById(ctx context.Context, task *models.Task) (*models.Task, error)
+	UpdateById(ctx context.Context, task map[string]interface{}) (*models.Task, error)
 	DeleteById(ctx context.Context, id uint) error
 }
 
@@ -37,7 +37,7 @@ func (s *TaskService) GetById(ctx context.Context, id uint) (*models.Task, error
 	return s.taskRepository.GetById(ctx, id)
 }
 
-func (s *TaskService) UpdateById(ctx context.Context, task *models.Task) (*models.Task, error) {
+func (s *TaskService) UpdateById(ctx context.Context, task map[string]interface{}) (*models.Task, error) {
 	return s.taskRepository.UpdateById(ctx, task)
 }
 

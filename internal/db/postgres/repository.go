@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/paincake00/todo-go/internal/db/models"
 	"gorm.io/gorm"
@@ -15,7 +14,7 @@ type ITaskRepository interface {
 	Create(ctx context.Context, task *models.Task) (*models.Task, error)
 	GetAll(ctx context.Context, limit, offset int) ([]models.Task, error)
 	GetById(ctx context.Context, id uint) (*models.Task, error)
-	UpdateById(ctx context.Context, task *models.Task) (*models.Task, error)
+	UpdateById(ctx context.Context, task map[string]interface{}) (*models.Task, error)
 	DeleteById(ctx context.Context, id uint) error
 }
 
@@ -53,10 +52,13 @@ func (t TaskRepository) GetById(ctx context.Context, id uint) (*models.Task, err
 	return &task, nil
 }
 
-func (t TaskRepository) UpdateById(ctx context.Context, task *models.Task) (*models.Task, error) {
-	task.UpdatedAt = time.Now()
-	t.db.Model(task).Updates(task.ToMap())
-	return t.GetById(ctx, task.Id)
+func (t TaskRepository) UpdateById(ctx context.Context, task map[string]interface{}) (*models.Task, error) {
+	//task.UpdatedAt = time.Now()
+
+	i, _ := task["id"].(uint)
+
+	t.db.Model(&models.Task{}).Where("id = ?", i).Updates(task)
+	return t.GetById(ctx, i)
 }
 
 func (t TaskRepository) DeleteById(ctx context.Context, id uint) error {

@@ -48,7 +48,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.TaskDTO"
+                                "$ref": "#/definitions/dto.TaskResponseDTO"
                             }
                         }
                     },
@@ -79,7 +79,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskCreateDTO"
                         }
                     }
                 ],
@@ -87,7 +87,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     },
                     "400": {
@@ -128,7 +128,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     },
                     "400": {
@@ -177,7 +177,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     }
                 ],
@@ -185,7 +185,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TaskDTO"
+                            "$ref": "#/definitions/dto.TaskResponseDTO"
                         }
                     },
                     "400": {
@@ -292,7 +292,21 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TaskDTO": {
+        "dto.TaskCreateDTO": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TaskResponseDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
